@@ -334,8 +334,9 @@ image(KDE$eval.points[[1]], KDE$eval.points[[2]], KDE$estimate,col=viridis(200),
 points(KDE$x,col=1)
 
 
-#This is all KDE does. It just adds density distributions around data points. It is a agnostic non-modelistic descriptive statistical analysis. (But it can yield inetersting results and can be summarized in and ineteresting way)
-
+#This is all KDE does. It just adds density distributions around data points. It is a agnostic non-modelistic (nonparametric!) descriptive statistical analysis. (But it can yield inetersting results and can be summarized in and ineteresting way)
+#You can reac more on KDE and other non-parametric methods here:
+#https://bookdown.org/egarpor/NP-UC3M/kde-ii-mult.html
 
 
 
