@@ -5,7 +5,7 @@
 
 #And also it is useful to think about statistical models (especially the Bayesian ones) as predictive rather than truth revealing machines.
 
-#If zou share zour data and justifz zour methods, zou have nothing to worry about.
+#If you share your data and justify your methods, zou have nothing to worry about.
 
 library(rethinking)
 
