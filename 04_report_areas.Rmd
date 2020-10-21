@@ -1,0 +1,209 @@
+---
+title: "Log-norm jako default"
+author: "Petr Tureček"
+date: "3 9 2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,tidy = TRUE)
+```
+
+## Normální rozdělení
+
+Normální rodělení je očekávaným výsledkem aditivního procesu. Číslo z tohoto rozdělení dostaneme, pokud sečeteme $n$ náhodně vylosovaných kladných nebo záporných čísel.  Můžeme si představit, že tímto procesem aproximujeme určení hodnoty geneticky determinovaného znaku, například tělesné výšky jedince (Tímhle směrem uvažuje Fisher 1918). Každý jedinec začíná na "populačním průměru" - v tomto případě volím hodnotu 180 - a pak vylosuju 100 náhodných "alel", z nichž některé tělesnou výšku o centimetr zvýší, některé sníží.
+\
+```{r}
+#Mějme jedince A
+A<-c(180,sample(c(-1,1),100,replace = T))
+A
+#Jeho tělesná výška je pak sumou průměru a vylosovaných náhodných vlivů
+sum(A)
+```
+\
+Takových jedinců vyrobíme například 200. Suma průměru a oněch náhodných vlivů u každého jedince nám dá vektor tělesných výšek v našem vzorku. Plotneme to jako základní histogram.
+\
+```{r}
+#Mějme 200 jedinců definovaných jako průměr výšky a 100 náhodných vlivů +1 nebo -1 cm 
+listA<-lapply(1:200,function(i){c(180,sample(c(-1,1),100,replace = T))})
+
+#Můžeme se podívat na prvních 5
+str(listA[1:5])
+
+#Sumy těchto vektorů v seznamu jedinců jsou tělesnými výškami
+heights<-sapply(listA,sum)
+heights
+
+#Plotneme to jako základní histogram.
+plot(density(heights),col="#0066BB")
+```
+\
+Tento vektor výšek by měl +- projít testem, zda se jedná o čísla z normálního rozdělení (Shpairo-Wilkův test normality, který zde používám -spíš z lenosti- ukazuje tím nižší p hodnoty, čím větší vzorek si vyrobím, je lepší koukat na to W. Pokud je větší než 0.95, je v podstatě jisté, že distribuci čísel ve vektoru je možné dobře popsat normálním rozdělením.)
+\
+```{r}
+shapiro.test(heights)
+```
+\
+
+## Log-normální rozdělení
+
+Podobné cvičení je možné udělat pro multiplikativní proces. Nebude nás zajímat součet čísel v každém vektoru, ale jejich součin. Můžeme o tom mluvit klidně rovnou jako o velikosti areálu. Pro jednoduchost můžeme předpokládat, že medián velikosti areálu je velký asi jako naše republika (cca 80 tisíc čtverečních kilometrů). Vůbec nevím, jestli je tohle pravda, ale rychlé googlení "median species area", nedává jednoznačnou a uspokojivou odpověď. Ono je to jedno... Byl jsem v pokušení dát medián areálu prostě 1, ale tohle je pro představu asi lepší.
+\
+Nesampluju čísla +1 a -1 ale čísla 1.2 a 0.83 (což je 1/1.2). Beru, že toto jsou náhodné vlivy, které nám ze "startovní pozice" běžný areál zvětší o 20%, nebo ho o příslušný počet procent (asi 17%) zmenší. Když se tedy areál jednou zvětší a jednou zmenší, vrátí se na výchozí hodnotu.
+\
+```{r}
+#Kolik je 1/1.2?
+1/1.2
+#Areál 80 (tis. km2) se jednou zvětší a jednou zmenší, vrátí se na původní hodnotu
+(80*1.2)*0.83333333
+
+#Je tomu tak i když se nejdříve zmenší a pak zvětší. Na pořadí změn velikosti nezáleží, protože násobení je komutativní.
+(80*0.83333333)*1.2
+
+```
+\
+Kdybych přistupoval k procentním bodům aditivně (tedy zvolil bych výběr hodnot stejně daleko od 100% - např. 80% a 120%, nevrátili bychom se na původní hodnotu, protože 1.2*0.8 < 1
+\
+```{r}
+(80*0.8)*1.2
+(80*1.2)*0.8
+
+```
+\
+V příkladu ekvivalentním náhodnému aditivnímu procesu výše, je tedy nutné používat jedno číslo větší než 1 (zde 1.2) a jeho převrácenou hodnotu.
+\
+```{r}
+#Ručně zde nastavím seed generátoru náhodných čísel, na "náhodnosti" procesu to nic neubírá, jen vím, že ta sekvence vyjde pokaždé stejně, takže můžu níže mluvit o rozdílech mezi sekvencemi s různými seedy.
+set.seed(111)
+B<-c(80,sample(c(1/1.2,1.2),100,replace = T))
+B
+prod(B)
+```
+
+Areál je malý, přitom poměr 1.2 a její převrácené hodnoty ve vektoru je relativně vyrovnaný.
+```{r}
+summary(as.factor(B))
+```
+
+Náhodný string založený na seedu 222 obsahuje o něco více čísel 1.2, rozdíly mezi součiny prvků ve vektorech jsou ale obrovské.
+```{r}
+set.seed(222)
+B<-c(80,sample(c(1/1.2,1.2),100,replace = T))
+summary(as.factor(B))
+prod(B)
+```
+```{r}
+
+#Mějme takových náhodných areálů zase 200; průměr jako republika a 100 náhodných vlivů *1.2 nebo /1.2
+listB<-lapply(1:200,function(i){c(80,sample(c(1/1.2,1.2),100,replace = T))})
+
+#Můžeme se podívat na prvních 5 zase
+str(listB[1:5])
+
+#Spočítáme plochy
+areas<-sapply(listB,prod)
+areas
+
+#A plotneme
+plot(density(areas),col="#0066BB")
+```
+\
+Když se necháme unést tím, že je tam pár těch obrovských areálů, kde se zrovna sešlo dost případů náhodného zvětšení oproti zmenšení, můžeme dospět k závěru, že "má většina druhů malé areály". (Jsou ale vážně malé? Absolutně malé, enbo malé jen v porovnání s kosmopolitními druhy?) Na tom rozdělení ale není nic divného, je jen důsledkem toho, že vývoj velikosti areálu druhu je multiplikatvní proces. Klást si tuto otázku je podobné jako ptát se (a i ta odpověď je pak podobná), proč má většina geneticky determinovaných znaků přibližně normální rozdělení (no ono asi nakonec nemá, protože Fischerovská jednoduchá aditivní variance vedoucí na normální rozložení je abstraktním ideálem. Budou se uplatňovat různé epistatické interakce, určitě najdeme geny s účinky multiplikativní povahy - proto ty časté tlusté konce rozložení biologických znaků směrem k vysokým hodnotám a tak...) Takhle prostě log-normální rozdělení vypadá. Ono když se podíváme na distribuci logaritmů tohoto vektoru, dostaneme rozdělení normální, které projde i tím přísným Shapiro testem.
+\
+```{r}
+plot(density(log(areas)),col="#0066BB")
+shapiro.test(log(areas))
+```
+\
+Není divu. Takhle je logaritmus vynalezen - převádí komplikované násobení na jednoduché sčítání. Celý ten multiplikativní proces se na logaritmické škále změní na proces aditivní, který je naprosto identický s tím příkladem vzniku tělesných výšek (akorát jsou tam jiná čísla, místo +1 a -1 konkrétně -0.182 a +0.182). 
+\
+```{r}
+listBlog<-lapply(listB,log)
+str(listBlog[1:5])
+```
+\
+Logaritmus součinu je součet logaritmů jednotlivých činitelů, což lze velmi snadno oddemonstrovat.
+\
+```{r}
+head(data.frame(sapply(listBlog,sum),log(areas)))
+```
+\
+Dá se představit spousta různých procesů, které na tohle rozdělení povedou (třeba takové, co byly/měly být představeny v té BP), ale je klíčové, že my si nemusíme vybírat žádný z nich. Jednou se areál zvětší, protože se druh přizpůsobí i na jinou niku/stane se větším generalistou, jindy se zvětší, protože se obývaný biotop kvůli změně podnebí rozšíří na větší území, někdy se zmenší, protože shoří půlka lesa atd. Jde jen o to, že všechny tyto změny budou s větší pravděpodobností vypadat jako "zvětšení o procento" než "zvětšení o jeden hektar". Tohle jsem měl na mysli, když jsem říkal, že log-normal by měl být výchozí neinformovaný předpoklad a odchylka od tohoto rozdělení teprve tím, co je potřeba odvysvětlit. Třeba velmi malé areály hostí velmi malé populace, takže když do toho bude sahat ještě jiný stochastický proces aditivního rázu (fluktuace počtu organismů kolem hodnoty predikované velikostí areálu např.), budou druhy s velmi malými populacemi - potažmo velmi malými areály - častěji náhodou mizet (jak se jejich populace dostane na 0, nebude druh a nebude areál). Nebo naopak - ty největší areály, které bychom na záladě log-normálního rozložení predikovali, se nevejdou na kontinenty (nebo na planetu!), což povede k mírné nadreprezentaci těch areálů "těsně pod vrcholem" (Storch a spol 2012 doi:10.1038/nature11226).
+\
+
+## Další možnosti - exponenciální rozložení, stochasticita
+
+Koukal jsem ještě na Wikipedii sem: https://en.wikipedia.org/wiki/Maximum_entropy_probability_distribution
+A log-normální rozdělení je rozdělením s maximální entropií pro čísla, která jsou kladná (záporný areál rozšíření být nemůže) a které mají netriviální varianci. Pokud ten argument tedy přeženu (ale vlastně oprávněně, vzhledem k těmhle minimálním constraintům maximální entropie), nemusím hledat důvod, proč by měl mít stochastický proces vzniku areálů multiplikativní povahu, stačí mi vědět, že areály jsou kladná čísla s nějakou variancí.
+Tipuju, že právě na hraně mezi exponenciálním rozdělením (kde pravděpodobnostní hustota klesá celou dobu od modu nula a kde je očekávaná variance dopočitatelná z průměru, to rozdělení má tedy jediný parametr - "rate") a tím log-normem (dva parametry - průměr logaritmů a standardní odchylka logaritmů) se povede nějaká zajímavá debata. Exponenciální rozdělení má maximální entropii pro jedinou omezující podmínku: že se jedná o kladná čísla. V případě exponenciálního rozložení velikostí bychom čekali tedy ohromné množství maličkých areálů. Třeba někdo tvrdí, že do toho modelu nemusíme vůbec zanášet varianci těch areálů jako parametr (Tohle by nevyžadovalo vůbec předpoklad, že je vývoj velikosti areálů multiplikativní proces). Tento "minimalistický model" by si šlo představit tak, že se prostě z klobouku s definovaným průměrem vylosuje kladné číslo, což je ten areál, a ty malý areály časem zaniknou díky stochasticky kolísající velikosti populace. To povede na rozdělení, které bude připomínat log-norm, ale ve skutečnosti bude parametrizované jinak.
+\
+```{r}
+#200 čísel z náhodného exponenciálního rozdělení
+listC<-rexp(200,1/80)
+
+#Největší záporný výkmit (dělám jako výkmit areálu, je to jedno, vztah mezi areálem a populací předpokládám nějaký hodně deterministický lineární) - polovina normálního rozložení od nuly dolů se směrodatnou odchylkou 20 (to je ten druhý parametr výsledků)
+max.fluct.neg<--abs(rnorm(200,0,20))
+
+#Tam, kde to největší záporný výkmit v součtu s průměrem dostane pod nulu, druh zmizí, jinak beru ten průměr.
+areasC<-listC[(listC+max.fluct.neg)>0]
+plot(density(areasC),col="#0066BB")
+
+#Jak vypadá rozdělení po zlogaritmování a jak se k tomu staví shapiro test
+plot(density(log(areasC)),col="#0066BB") 
+shapiro.test(log(areasC))
+
+```
+\
+Ono to výsledné rozložení je hodně podobné tomu log-normálnímu (obvykle tam ale chybí ty "mega velké areály"). Chtělo by to dost dat, aby se vůbec dalo rozhodnout, které to rozdělení vystihuje realitu lépe (a taky asi přidat k tomu log-normálnímu parametr té odúmrtě malých areálů a parametr přetékání velkých areálů přes okraj kontinentu.)
+\
+
+## Varianty původní simulace s extra náhodou
+
+Každopádně ten multiplikativní element je tak dominantní, že i když nezačínáme v každém případě na mediánu (80), ale na náhodném čísle z nějakého aditivního rozdělení (třeba průměr 80 a SD 20), výsledek leze hodně podobný jako v té základní simulaci výše.
+\
+```{r}
+
+#Náhodný start kolem 80 km2 a 100 náhodných vlivů *1.2 nebo /1.2
+listB<-lapply(1:200,function(i){c(abs(rnorm(1,80,20)),sample(c(1/1.2,1.2),100,replace = T))})
+
+#Prvních 5
+str(listB[1:5])
+
+areas<-sapply(listB,prod)
+plot(density(areas),col="#0066BB")
+shapiro.test(log(areas))
+```
+\
+Stejně tak, když si to nebudu usnadňovat pouhými dvěma možnostmi 1.2 a 0.83, ale vezmu celý košík náhodných procentuálních změn
+\
+```{r}
+listB<-lapply(1:200,function(i){c(80,ifelse(sample(c(0,1),100,replace=T)==0,1/(1+rexp(100,4)),1+rexp(100,4)))})
+
+#Čistě pozitivní procentuální změny, tahám je z exponenciálního rozložení s průměrem 0.25 (při větších hodnotách je to rozdělení šíleně sešikmené - pořád je lognormální, testem projde, ale graf vypadá blbě), ale je to jedno, mohly by být z lognormálního. Na tomhle to nezávisí.
+
+#Prvních 5
+str(listB[1:5])
+
+areas<-sapply(listB,prod)
+plot(density(areas),col="#0066BB",)
+shapiro.test(log(areas))
+```
+\
+Vychází to taky jako v pohodě log-normální rozdělení. Takhle se prostě chovají multiplikativní procesy. :)
+
+\
+Poslední, co bych chtěl ještě zkusit, je zapojení náhodné délky vektorů. Jakože velikost jednoho areálu ("starého") je určna dvěstě změnami, velikost jiného třeba jen deseti změnami. Zkombinuju tu úplně všechno - náhodný normálně rozložený start, a náhodný počet náhodně velkých multiplikativních změn. Shapiro testem to po zlogaritmování v pohodě projde. I takto vágně definovaný multiplikativní proces vede na log-normální rozdělení.
+
+```{r}
+listB<-lapply(1:200,function(i,len=round(runif(1,2,200))){c(abs(rnorm(1,80,20)),ifelse(sample(c(0,1),len,replace=T)==0,1/(1+rexp(len,4)),1+rexp(len,4)))})
+
+#Zvolil jsem jako délku vektoru náhodné číslo mezi 2 a 200 (uniformní rozdělení)
+sapply(listB,length)
+
+#Prvních 5
+str(listB[1:5])
+
+areas<-sapply(listB,prod)
+plot(density(areas),col="#0066BB",)
+shapiro.test(log(areas))
+```
