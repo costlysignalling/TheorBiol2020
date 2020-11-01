@@ -1,4 +1,4 @@
-#Slightly expanded rethinking code continuing all the way to full mediation model
+#Slightly expanded rethinking code continuing right away to full mediation model
 library(rethinking)
 data(WaffleDivorce)
 
@@ -57,7 +57,7 @@ mPATH <- quap(
 #See? You do not damage any estimation of slopes in D regression by including the model for M as well
 plot( coeftab(mAonly,mMonly,mAM,mPATH) )
 
-#The reason why McElreath does not go "all the way" to compelete mediation model and rather treats the model of M as a separate regression altogether is probably the possible confusion stemming from model comparison. Including the model of M does not add anything to the predictive efficiency (measured as WAIC for example, see Chapetr  for more info), but it prevents us from calculation the WAIC of the M ~ A etc, because it works only with the first (uppermost) response variable.
+#The slight problem might stem from model comparison. Including the model of M does not add anything to the predictive efficiency (measured as WAIC for example, see Chapetr  for more info), but it prevents us from calculation the WAIC of the M ~ A etc, because it works only with the first (uppermost) response variable.
 compare(mAonly,mMonly,mAM,mPATH)
 
 #See? Rearranging the predictor order would not change parameter estimates, but the compare (or WAIC, or PSIS..) function would calculate the information criterion for the model of M instead of the model of D, so the comparison would no longer make sense:
