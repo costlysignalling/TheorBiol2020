@@ -86,9 +86,9 @@ f6<-alist(
   sigmaN ~ dexp( 1 ))
 
 
-fingerprintGener<-function(du){
+fingerprintGener<-function(du,sorted=T){
   formulas<-list(f1,f2,f3,f4,f5,f6)
-
+  
   res<-lapply(1:6,function(i){quap(formulas[[i]], data=du)})
   print(0)
   
@@ -140,7 +140,7 @@ fingerprintGener<-function(du){
   res5<-lapply(1:6,function(i){quap(formulas[[i]], data=d5)});print(5)
   res6<-lapply(1:6,function(i){quap(formulas[[i]], data=d6)});print(6)
   
-
+  
   #Get empirical coef table
   colt<-"#FF005580"
   plot( coeftab(res[[1]],res[[2]],res[[3]],res[[4]],res[[5]],res[[6]]) , pars=c("bMN","bMK","bNK") ,prob=0.89)
@@ -160,7 +160,7 @@ fingerprintGener<-function(du){
   title("model 1",adj=0)
   title("empirical",adj=1,col.main=colt)
   mtext(paste("dist =",round(dist1,3)))
-
+  
   
   plot( coeftab(res2[[1]],res2[[2]],res2[[3]],res2[[4]],res2[[5]],res2[[6]]) , pars=c("bMN","bMK","bNK"))
   for(i in 1:6){
@@ -173,7 +173,7 @@ fingerprintGener<-function(du){
   title("model 2",adj=0)
   title("empirical",adj=1,col.main=colt)
   mtext(paste("dist =",round(dist2,3)))
-
+  
   
   plot( coeftab(res3[[1]],res3[[2]],res3[[3]],res3[[4]],res3[[5]],res3[[6]]) , pars=c("bMN","bMK","bNK"))
   for(i in 1:6){
@@ -186,7 +186,7 @@ fingerprintGener<-function(du){
   title("model 3",adj=0)
   title("empirical",adj=1,col.main=colt)
   mtext(paste("dist =",round(dist3,3)))
-
+  
   
   plot( coeftab(res4[[1]],res4[[2]],res4[[3]],res4[[4]],res4[[5]],res4[[6]]) , pars=c("bMN","bMK","bNK"))
   for(i in 1:6){
@@ -199,7 +199,7 @@ fingerprintGener<-function(du){
   title("model 4",adj=0)
   title("empirical",adj=1,col.main=colt)
   mtext(paste("dist =",round(dist4,3)))
-
+  
   
   plot( coeftab(res5[[1]],res5[[2]],res5[[3]],res5[[4]],res5[[5]],res5[[6]]) , pars=c("bMN","bMK","bNK"))
   for(i in 1:6){
@@ -212,7 +212,7 @@ fingerprintGener<-function(du){
   title("model 5",adj=0)
   title("empirical",adj=1,col.main=colt)
   mtext(paste("dist =",round(dist5,3)))
-
+  
   
   plot( coeftab(res6[[1]],res6[[2]],res6[[3]],res6[[4]],res6[[5]],res6[[6]]) , pars=c("bMN","bMK","bNK"))
   for(i in 1:6){
@@ -225,12 +225,16 @@ fingerprintGener<-function(du){
   title("model 6",adj=0)
   title("empirical",adj=1,col.main=colt)
   mtext(paste("dist =",round(dist6,3)))
-
+  
   
   dists<-c(dist1,dist2,dist3,dist4,dist5,dist6)
   names(dists)<-paste("model",1:6)
   
-  return(sort(dists))
+  if(sorted==T){
+    dists<-sort(dists)
+  }
+  
+  return(dists)
 }
 
 
