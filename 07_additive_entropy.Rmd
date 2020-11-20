@@ -1,0 +1,33 @@
+---
+title: "Additive entropy"
+author: "Petr Tureček"
+date: "11 11 2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+A<-c(0.2,0.8)
+B<-c(0.5,0.5)
+
+HA<-sum(-log(A)*A)
+HB<-sum(-log(B)*B)
+HA
+HB
+```
+```{r}
+HA+HB
+```
+
+```{r}
+C<-A %*% t(B)
+C
+```
+
+```{r}
+sum(-log(C)*C)
+
+```
