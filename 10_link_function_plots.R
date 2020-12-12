@@ -33,7 +33,7 @@ abline(v=1,lty=1,col=8)
 x<-seq(-5,5,0.01)
 s<-exp(x)
 
-plot(x,s,col=2,type="l")
+plot(x,s,col=2,type="l",xlab="log(p/(1-p))")
 abline(v=seq(-5,5,1),col=8)
 abline(h=exp(seq(-5,5,1)),col=8,lty=2)
 
