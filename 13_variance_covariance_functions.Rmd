@@ -1,0 +1,86 @@
+---
+title: "Covariance and correlations not R default"
+author: "Petr Tureček"
+date: "9 2 2021"
+output: pdf_document
+---
+
+Functions coded from the definition 
+```{r}
+var2<-function(x){
+  sum((x-mean(x))^2)/length(x)
+}
+
+sd2<-function(x){
+  sqrt(sum((x-mean(x))^2)/length(x))
+}
+
+cov2<-function(x,y){
+  sum((x-mean(x))*(y-mean(y)))/length(x)
+}
+
+cor2<-function(x,y){
+  cov2(x,y)/(sd2(x)*sd2(y))
+}
+```
+
+Two vectors
+```{r}
+x<-c(1,2,3)
+y<-c(10,30,5)
+```
+
+Comparison of the functions above with R defults
+```{r}
+var2(x)
+var(x)
+```
+```{r}
+sd2(x)
+sd(x)
+```
+```{r}
+cov2(x,y)
+cov(x,y)
+```
+```{r}
+cor2(x,y)
+cor(x,y)
+```
+
+R uses functions that attempt to faithfully approximate the population (not sample) estimates, so it employes the -1 correction on the sample size terms.
+```{r}
+varO<-function(x){
+  sum((x-mean(x))^2)/(length(x)-1)
+}
+
+sdO<-function(x){
+  sqrt(sum((x-mean(x))^2)/(length(x)-1))
+}
+
+covO<-function(x,y){
+  sum((x-mean(x))*(y-mean(y)))/(length(x)-1)
+}
+
+corO<-function(x,y){
+  covO(x,y)/(sdO(x)*sdO(y))
+}
+```
+
+See?
+```{r}
+varO(x)
+var(x)
+```
+```{r}
+sdO(x)
+sd(x)
+```
+```{r}
+covO(x,y)
+cov(x,y)
+```
+```{r}
+corO(x,y)
+cor(x,y)
+```
